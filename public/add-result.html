@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Result</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream: #FAF6F0;
+      --cream-card: #FFFFFF;
+      --terracotta: #D97757;
+      --terracotta-dark: #B5613F;
+      --charcoal: #2D2A26;
+      --muted: #8A8478;
+      --border: #E8E1D6;
+      --green: #5C8A5C;
+      --green-bg: #EAF1E8;
+      --red: #C2604A;
+      --red-bg: #F7E9E4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--cream);
+      color: var(--charcoal);
+      font-family: 'Georgia', 'Segoe UI', serif;
+      min-height: 100vh;
+    }
+    .navbar {
+      background: var(--cream-card) !important;
+      border-bottom: 1px solid var(--border);
+      padding: 1.2rem 0;
+    }
+    .navbar-brand {
+      color: var(--charcoal) !important;
+      font-weight: 700;
+      font-size: 1.1rem;
+      font-family: 'Segoe UI', sans-serif;
+      text-decoration: none !important;
+    }
+    .form-card {
+      background: var(--cream-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.25rem;
+      max-width: 520px;
+      margin: 3rem auto;
+    }
+    .form-card h2 {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--charcoal);
+    }
+    .form-label {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-family: 'Segoe UI', sans-serif;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .form-control, .form-select {
+      background: var(--cream) !important;
+      border: 1px solid var(--border);
+      color: var(--charcoal) !important;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .form-control:focus, .form-select:focus {
+      background: #fff !important;
+      border-color: var(--terracotta);
+      box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.12);
+    }
+    .btn-submit {
+      background: var(--terracotta);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      font-weight: 700;
+      width: 100%;
+      font-size: 1rem;
+      font-family: 'Segoe UI', sans-serif;
+      transition: background 0.15s;
+    }
+    .btn-submit:hover { background: var(--terracotta-dark); }
+    .alert-box {
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 1rem;
+      display: none;
+      font-family: 'Segoe UI', sans-serif;
+      font-size: 0.9rem;
+    }
+    .alert-success { background: var(--green-bg); border: 1px solid #C5DCC0; color: var(--green); }
+    .alert-error { background: var(--red-bg); border: 1px solid #EBC5BA; color: var(--red); }
+  </style>
+</head>
+<body>
+<nav class="navbar px-4">
+  <a href="index.html" class="navbar-brand">← Dashboard</a>
+</nav>
+<div class="container">
+  <div class="form-card">
+    <h2>Add Result</h2>
+    <div class="mb-3">
+      <label class="form-label">Select Student</label>
+      <select class="form-select mt-1" id="student_id">
+        <option value="">Loading students...</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Subject</label>
+      <input type="text" class="form-control mt-1" id="subject" placeholder="e.g. Mathematics"/>
+    </div>
+    <div class="row mb-3">
+      <div class="col">
+        <label class="form-label">Marks Obtained</label>
+        <input type="number" class="form-control mt-1" id="marks_obtained" placeholder="e.g. 85"/>
+      </div>
+      <div class="col">
+        <label class="form-label">Total Marks</label>
+        <input type="number" class="form-control mt-1" id="total_marks" placeholder="e.g. 100"/>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Exam Date</label>
+      <input type="date" class="form-control mt-1" id="exam_date"/>
+    </div>
+    <button class="btn-submit" onclick="addResult()">Save Result</button>
+    <div class="alert-box" id="alert"></div>
+  </div>
+</div>
+<script>
+  async function loadStudents() {
+    const res = await fetch('/api/students');
+    const students = await res.json();
+    const sel = document.getElementById('student_id');
+    sel.innerHTML = '<option value="">Select a student</option>' +
+      students.map(s => `<option value="${s.id}">${s.name} (${s.roll_no})</option>`).join('');
+  }
+
+  async function addResult() {
+    const student_id = document.getElementById('student_id').value;
+    const subject = document.getElementById('subject').value.trim();
+    const marks_obtained = document.getElementById('marks_obtained').value;
+    const total_marks = document.getElementById('total_marks').value;
+    const exam_date = document.getElementById('exam_date').value;
+    const alertEl = document.getElementById('alert');
+    if (!student_id || !subject || !marks_obtained || !total_marks || !exam_date) {
+      alertEl.className = 'alert-box alert-error'; alertEl.style.display = 'block';
+      alertEl.textContent = 'All fields are required!'; return;
+    }
+    if (parseInt(marks_obtained) > parseInt(total_marks)) {
+      alertEl.className = 'alert-box alert-error'; alertEl.style.display = 'block';
+      alertEl.textContent = 'Marks obtained cannot exceed total marks!'; return;
+    }
+    try {
+      const res = await fetch('/api/results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ student_id, subject, marks_obtained, total_marks, exam_date })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alertEl.className = 'alert-box alert-success'; alertEl.style.display = 'block';
+        alertEl.textContent = 'Result saved successfully!';
+        document.getElementById('subject').value = '';
+        document.getElementById('marks_obtained').value = '';
+        document.getElementById('total_marks').value = '';
+        document.getElementById('exam_date').value = '';
+        document.getElementById('student_id').value = '';
+      } else {
+        alertEl.className = 'alert-box alert-error'; alertEl.style.display = 'block';
+        alertEl.textContent = data.error || 'Error saving result';
+      }
+    } catch { alertEl.className = 'alert-box alert-error'; alertEl.style.display = 'block'; alertEl.textContent = 'Server error!'; }
+  }
+
+  loadStudents();
+</script>
+</body>
+</html>

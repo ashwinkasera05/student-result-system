@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Result System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --cream: #FAF6F0;
+      --cream-card: #FFFFFF;
+      --terracotta: #D97757;
+      --terracotta-dark: #B5613F;
+      --charcoal: #2D2A26;
+      --muted: #8A8478;
+      --border: #E8E1D6;
+      --green: #5C8A5C;
+      --green-bg: #EAF1E8;
+      --red: #C2604A;
+      --red-bg: #F7E9E4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--cream);
+      color: var(--charcoal);
+      font-family: 'Georgia', 'Segoe UI', serif;
+      min-height: 100vh;
+    }
+    .navbar {
+      background: var(--cream-card) !important;
+      border-bottom: 1px solid var(--border);
+      padding: 1.2rem 0;
+    }
+    .navbar-brand {
+      color: var(--charcoal) !important;
+      font-weight: 700;
+      font-size: 1.4rem;
+      font-family: 'Georgia', serif;
+    }
+    .navbar-brand .accent { color: var(--terracotta); }
+    h1.page-title {
+      font-family: 'Georgia', serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--charcoal);
+    }
+    .page-sub { color: var(--muted); font-size: 1rem; font-family: 'Segoe UI', sans-serif; }
+    .stat-card {
+      background: var(--cream-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.75rem;
+      text-align: center;
+    }
+    .stat-num {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--terracotta);
+      font-family: 'Georgia', serif;
+    }
+    .stat-lbl {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-family: 'Segoe UI', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+    .card-dash {
+      background: var(--cream-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.25rem;
+      text-align: center;
+      text-decoration: none;
+      color: var(--charcoal);
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+      display: block;
+      height: 100%;
+    }
+    .card-dash:hover {
+      transform: translateY(-4px);
+      border-color: var(--terracotta);
+      color: var(--charcoal);
+      box-shadow: 0 8px 24px rgba(217, 119, 87, 0.12);
+    }
+    .card-icon {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--red-bg);
+      color: var(--terracotta);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      margin: 0 auto 1.2rem;
+    }
+    .card-title {
+      font-family: 'Georgia', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .card-desc { color: var(--muted); font-size: 0.9rem; font-family: 'Segoe UI', sans-serif; }
+  </style>
+</head>
+<body>
+<nav class="navbar px-4">
+  <span class="navbar-brand">Result<span class="accent">Hub</span></span>
+</nav>
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h1 class="page-title">Student Dashboard</h1>
+    <p class="page-sub">Manage students and academic results with ease</p>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-num" id="total-students">—</div>
+        <div class="stat-lbl">Total Students</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-num" id="total-results">—</div>
+        <div class="stat-lbl">Total Results</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="stat-num" id="avg-percent">—</div>
+        <div class="stat-lbl">Avg. Percentage</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <a href="add-student.html" class="card-dash">
+        <div class="card-icon">👤</div>
+        <div class="card-title">Add Student</div>
+        <div class="card-desc">Register a new student record</div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="add-result.html" class="card-dash">
+        <div class="card-icon">📝</div>
+        <div class="card-title">Add Result</div>
+        <div class="card-desc">Enter marks for a subject</div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="view-results.html" class="card-dash">
+        <div class="card-icon">📊</div>
+        <div class="card-title">View Results</div>
+        <div class="card-desc">See all student performance</div>
+      </a>
+    </div>
+  </div>
+</div>
+<script>
+  async function loadStats() {
+    try {
+      const [sRes, rRes] = await Promise.all([
+        fetch('/api/students'),
+        fetch('/api/results')
+      ]);
+      const students = await sRes.json();
+      const results = await rRes.json();
+      document.getElementById('total-students').textContent = students.length;
+      document.getElementById('total-results').textContent = results.length;
+      if (results.length > 0) {
+        const avg = results.reduce((sum, r) => sum + (r.marks_obtained / r.total_marks * 100), 0) / results.length;
+        document.getElementById('avg-percent').textContent = avg.toFixed(1) + '%';
+      } else {
+        document.getElementById('avg-percent').textContent = 'N/A';
+      }
+    } catch (e) { console.error(e); }
+  }
+  loadStats();
+</script>
+</body>
+</html>
